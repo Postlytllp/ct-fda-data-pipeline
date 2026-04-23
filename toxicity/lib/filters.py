@@ -13,10 +13,18 @@ def add_has_any_ae_flag(arms_df: pd.DataFrame, ae_summary_df: pd.DataFrame) -> p
     agg = ae_summary_df[["nct_id", "arm_label", "total_serious_affected",
                         "total_other_affected"]].copy()
     agg["_total"] = agg[["total_serious_affected", "total_other_affected"]].sum(axis=1)
-    lhs = lhs.merge(agg[["nct_id", "arm_label", "_total"]],
-                    on=["nct_id", "arm_label"], how="left")
+    # Use matched_to (AE group title set by arm resolver) as the join key when
+    # present; fall back to arm_label otherwise. This bridges the raw arm-group
+    # label (on arms_df) and the raw AE group title (on ae_df) — which may differ.
+    if "matched_to" in lhs.columns:
+        lhs["_ae_key"] = lhs["matched_to"].fillna(lhs["arm_label"])
+    else:
+        lhs["_ae_key"] = lhs["arm_label"]
+    agg = agg.rename(columns={"arm_label": "_ae_key"})
+    lhs = lhs.merge(agg[["nct_id", "_ae_key", "_total"]],
+                    on=["nct_id", "_ae_key"], how="left")
     lhs["has_any_ae"] = lhs["_total"].fillna(0) > 0
-    lhs = lhs.drop(columns=["_total"])
+    lhs = lhs.drop(columns=["_total", "_ae_key"])
     return lhs
 
 

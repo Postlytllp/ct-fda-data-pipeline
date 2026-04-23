@@ -5,7 +5,6 @@ from typing import Any, Dict, List
 import pandas as pd
 from tqdm.auto import tqdm
 
-from lib.arm_resolver import normalize_arm_label, resolve_arm_labels
 
 
 def _safe_list(x) -> List:
@@ -55,7 +54,7 @@ def parse_ae_raw(studies: List[Dict[str, Any]]) -> pd.DataFrame:
                     rows.append({
                         "nct_id": nct,
                         "raw_group_id": gid,
-                        "arm_label": normalize_arm_label(groups.get(gid) or "") or groups.get(gid),
+                        "arm_label": groups.get(gid),
                         "ae_category": category,
                         "meddra_term": term,
                         "organ_system": organ,

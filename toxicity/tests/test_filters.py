@@ -49,3 +49,30 @@ def test_has_lung_cancer_drug_match_any_intervention_primary():
     out = add_has_lung_cancer_drug_match_flag(arms, ai)
     assert out.loc[out.arm_label == "A", "has_lung_cancer_drug_match"].iloc[0] == True
     assert out.loc[out.arm_label == "B", "has_lung_cancer_drug_match"].iloc[0] == False
+
+
+def test_has_any_ae_uses_matched_to_when_present():
+    # arm_label is raw arm-group label; matched_to is the AE group title
+    arms = pd.DataFrame([
+        {"nct_id": "N1", "arm_label": "Experimental: Drug A",
+         "matched_to": "Arm 1: Drug A 200mg"},
+        {"nct_id": "N1", "arm_label": "Placebo Comparator",
+         "matched_to": "Arm 2: Placebo"},
+    ])
+    ae_summary = pd.DataFrame([
+        {"nct_id": "N1", "arm_label": "Arm 1: Drug A 200mg",
+         "total_serious_affected": 5, "total_other_affected": 10},
+        {"nct_id": "N1", "arm_label": "Arm 2: Placebo",
+         "total_serious_affected": 0, "total_other_affected": 0},
+    ])
+    out = add_has_any_ae_flag(arms, ae_summary)
+    assert out.loc[out.arm_label == "Experimental: Drug A", "has_any_ae"].iloc[0] == True
+    assert out.loc[out.arm_label == "Placebo Comparator", "has_any_ae"].iloc[0] == False
+
+
+def test_has_any_ae_falls_back_to_arm_label_when_no_matched_to():
+    arms = pd.DataFrame([{"nct_id": "N1", "arm_label": "A"}])
+    ae_summary = pd.DataFrame([{"nct_id": "N1", "arm_label": "A",
+                                "total_serious_affected": 3, "total_other_affected": 0}])
+    out = add_has_any_ae_flag(arms, ae_summary)
+    assert out.loc[0, "has_any_ae"] == True

@@ -1,11 +1,26 @@
 """Parse CT.gov v2 study JSON objects into base dataframes."""
 from __future__ import annotations
 import json
+import re
 from typing import Any, Dict, List, Optional
 import pandas as pd
 from tqdm.auto import tqdm
 
 from lib.arm_resolver import normalize_arm_label
+
+_INTERVENTION_PREFIX_RE = re.compile(
+    r"^(Drug|Biological|Other|Procedure|Device|Radiation|"
+    r"Diagnostic\s+Test|Dietary\s+Supplement|Behavioral|"
+    r"Combination\s+Product|Genetic)\s*:\s*",
+    flags=re.IGNORECASE,
+)
+
+
+def _strip_intervention_prefix(name: str) -> str:
+    """Remove CT.gov v2 intervention-type prefix (e.g. 'Drug: ', 'Biological: ')."""
+    if not name:
+        return name
+    return _INTERVENTION_PREFIX_RE.sub("", name).strip()
 
 
 def _get(path, d, default=None):
@@ -122,7 +137,8 @@ def parse_arm_interventions(studies: List[Dict[str, Any]],
             arm_label = g.get("label")
             for iv_name in _safe_list(g.get("interventionNames")):
                 iv = iv_index.get(iv_name, {})
-                rxcui = alias_map.get(str(iv_name).lower())
+                lookup_name = _strip_intervention_prefix(iv_name)
+                rxcui = alias_map.get(lookup_name.lower())
                 rows.append({
                     "nct_id": nct,
                     "arm_label": arm_label,

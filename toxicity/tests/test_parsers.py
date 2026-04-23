@@ -54,3 +54,39 @@ def test_parse_arm_interventions_is_mn_with_required_columns():
                 "rxnorm_rxcui", "matched_lung_cancer_drug", "is_primary_oncology",
                 "drug_class"}
     assert required.issubset(ai_df.columns)
+
+
+def test_parse_arm_interventions_strips_type_prefix_for_alias_match():
+    # Synthetic study shaped like CT.gov v2 output: armGroups.interventionNames
+    # carries the 'Drug: <name>' prefix.
+    studies = [{
+        "protocolSection": {
+            "identificationModule": {"nctId": "NCTTEST1"},
+            "armsInterventionsModule": {
+                "armGroups": [{"label": "Arm A",
+                               "interventionNames": ["Drug: Pembrolizumab",
+                                                    "Biological: Nivolumab"]}],
+                "interventions": [
+                    {"type": "Drug", "name": "Pembrolizumab"},
+                    {"type": "Biological", "name": "Nivolumab"},
+                ],
+            },
+        }
+    }]
+    drug_df = pd.DataFrame([
+        {"canonical_name": "pembrolizumab", "rxcui": "1547545",
+         "aliases": '["pembrolizumab","Keytruda"]'},
+        {"canonical_name": "nivolumab", "rxcui": "1597876",
+         "aliases": '["nivolumab","Opdivo"]'},
+    ])
+    drug_class_df = pd.DataFrame([
+        {"rxcui": "1547545", "generic_name": "pembrolizumab", "drug_class": "immunotherapy"},
+        {"rxcui": "1597876", "generic_name": "nivolumab", "drug_class": "immunotherapy"},
+    ])
+    ai = parse_arm_interventions(studies, drug_df, drug_class_df)
+    assert len(ai) == 2
+    assert ai["is_primary_oncology"].all(), \
+        f"prefix-stripped lookup should match: {ai[['intervention_name','rxnorm_rxcui']].to_dict('records')}"
+    assert set(ai["rxnorm_rxcui"]) == {"1547545", "1597876"}
+    # Raw intervention_name preserved for audit
+    assert "Drug: Pembrolizumab" in ai["intervention_name"].tolist()
