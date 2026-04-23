@@ -1,8 +1,33 @@
 """Phase 1 part B — merge NSCLC+SCLC drug lists, harmonize, emit final CSV."""
 from __future__ import annotations
 import json
+import re
 from typing import Dict, Iterable, List, Any
 import pandas as pd
+
+_ALIAS_NOISE_RE = re.compile(
+    r"\b\d+(\.\d+)?\s*(ML|MG|MCG|UNT|IU|KG|G|%)\b"
+    r"|\b(Auto-Injector|Prefilled Syringe|Injection|Tablet|Capsule|"
+    r"Extended Release|Oral Solution|Oral Suspension|Inhalation|"
+    r"Patch|Gel|Cream|Ointment|Syrup|Drops|Lozenge|Film|Strip|Powder)\b",
+    re.IGNORECASE,
+)
+
+
+def _alias_is_clean(alias: str) -> bool:
+    """True when alias is a plausible intervention-query token.
+
+    Rejects RxNorm SBD dose-form strings like
+    "10 ML ramucirumab 10 MG/ML Injection [Cyramza]".
+    """
+    if not alias:
+        return False
+    s = alias.strip()
+    if len(s) > 40:
+        return False
+    if _ALIAS_NOISE_RE.search(s):
+        return False
+    return True
 
 
 def merge_drugs(nsclc: Iterable[dict], sclc: Iterable[dict]) -> List[dict]:
@@ -45,8 +70,9 @@ def to_dataframe(merged_with_subtypes: List[dict],
         h = harmonized.get(name) or {}
         aliases = set()
         aliases.add(name)
-        aliases.update(h.get("all_brand_names") or [])
-        aliases.update(h.get("all_synonyms") or [])
+        for a in (h.get("all_brand_names") or []) + (h.get("all_synonyms") or []):
+            if _alias_is_clean(a):
+                aliases.add(a)
         rows.append({
             "canonical_name": name,
             "rxcui": h.get("rxcui"),

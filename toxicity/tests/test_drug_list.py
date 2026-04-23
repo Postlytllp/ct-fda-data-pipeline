@@ -48,3 +48,28 @@ def test_to_dataframe_canonicalizes_and_collapses_brands_to_aliases():
     assert "Keytruda" in aliases
     assert "MK-3475" in aliases
     assert "pembrolizumab" in aliases
+
+
+def test_to_dataframe_rejects_dose_form_aliases():
+    merged = [{"name": "pembrolizumab", "kind": "generic", "subtypes": ["NSCLC"]}]
+    harmonized = {
+        "pembrolizumab": {
+            "rxcui": "1547545",
+            "rxnorm_generic_name": "pembrolizumab",
+            "all_brand_names": ["Keytruda",
+                                "2.4 ML berahyaluronidase alfa-pmph 2000 UNT/ML Injection",
+                                "Keytruda Qlex"],
+            "all_synonyms": ["MK-3475",
+                            "10 ML pembrolizumab 25 MG/ML Injection [Keytruda]"],
+        },
+    }
+    df = to_dataframe(merged, harmonized, snapshot_date="2026-04-23")
+    aliases = json.loads(df.iloc[0].aliases)
+    assert "pembrolizumab" in aliases
+    assert "Keytruda" in aliases
+    assert "Keytruda Qlex" in aliases
+    assert "MK-3475" in aliases
+    # dose-form strings dropped
+    assert not any("ML" in a and "MG" in a for a in aliases)
+    assert not any("Injection" in a for a in aliases)
+    assert not any("UNT" in a for a in aliases)

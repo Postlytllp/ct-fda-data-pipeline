@@ -34,3 +34,13 @@ def test_build_query_params_adds_page_token_when_given():
     params = build_query_params(essie_expr='(x)', page_size=100, page_token="tok-123")
     assert params["pageToken"] == "tok-123"
     assert "countTotal" not in params  # only on first page
+
+
+def test_split_aliases_defaults_to_config_budget():
+    from lib.config import CTGOV_MAX_URL_BYTES
+    # Not a coverage test per se — just ensures the constant hasn't silently
+    # drifted back to an unsafe value that lets 414 errors through.
+    assert CTGOV_MAX_URL_BYTES <= 4000, (
+        "Server returned 414 when budget was 8000; keep budget ≤ 4000 to "
+        "account for URL-encoding inflation."
+    )

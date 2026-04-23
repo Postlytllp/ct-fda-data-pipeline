@@ -13,7 +13,7 @@ NCI_SCLC_URL = "https://www.cancer.gov/about-cancer/treatment/drugs/small-cell-l
 
 CTGOV_BASE_URL = "https://clinicaltrials.gov/api/v2/studies"
 CTGOV_PAGE_SIZE = 200
-CTGOV_MAX_URL_BYTES = 8000  # safe budget for Essie OR expression
+CTGOV_MAX_URL_BYTES = 2500  # safe budget for Essie OR expression (URL-encoding inflation ~3-4x)
 
 DIVERSITY_THRESHOLD = 0.95
 FUZZY_ARM_THRESHOLD = 90
