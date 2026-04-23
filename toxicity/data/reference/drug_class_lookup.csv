@@ -1,0 +1,47 @@
+rxcui,generic_name,drug_class,biomarker_note
+1547545,pembrolizumab,immunotherapy,PD-1 inhibitor
+1597876,nivolumab,immunotherapy,PD-1 inhibitor
+1940262,atezolizumab,immunotherapy,PD-L1 inhibitor
+1872878,durvalumab,immunotherapy,PD-L1 inhibitor
+2049106,cemiplimab,immunotherapy,PD-1 inhibitor
+1430437,ipilimumab,immunotherapy,CTLA-4 inhibitor
+1721559,tremelimumab,immunotherapy,CTLA-4 inhibitor
+1721560,tislelizumab,immunotherapy,PD-1 inhibitor
+2049107,osimertinib,targeted_oncology,EGFR-selective → Asian-skewed
+1721561,erlotinib,targeted_oncology,EGFR inhibitor
+1721562,gefitinib,targeted_oncology,EGFR inhibitor
+1721563,afatinib,targeted_oncology,EGFR inhibitor
+1721564,dacomitinib,targeted_oncology,EGFR inhibitor
+1721565,alectinib,targeted_oncology,ALK inhibitor
+1721566,crizotinib,targeted_oncology,ALK/ROS1 inhibitor
+1721567,brigatinib,targeted_oncology,ALK inhibitor
+1721568,lorlatinib,targeted_oncology,ALK inhibitor
+1721569,ceritinib,targeted_oncology,ALK inhibitor
+2049108,sotorasib,targeted_oncology,KRAS G12C inhibitor
+2049109,adagrasib,targeted_oncology,KRAS G12C inhibitor
+1721570,trametinib,targeted_oncology,MEK inhibitor
+1721571,dabrafenib,targeted_oncology,BRAF inhibitor
+1721572,selpercatinib,targeted_oncology,RET inhibitor
+1721573,pralsetinib,targeted_oncology,RET inhibitor
+1721574,entrectinib,targeted_oncology,NTRK inhibitor
+1721575,capmatinib,targeted_oncology,MET inhibitor
+1721576,tepotinib,targeted_oncology,MET inhibitor
+1721577,bevacizumab,antiangiogenic,VEGF-A inhibitor
+1721578,ramucirumab,antiangiogenic,VEGFR2 inhibitor
+1721579,nintedanib,antiangiogenic,multi-kinase
+3002,cisplatin,chemo_backbone,platinum
+2555,carboplatin,chemo_backbone,platinum
+10417,paclitaxel,chemo_backbone,taxane
+3639,docetaxel,chemo_backbone,taxane
+42347,gemcitabine,chemo_backbone,antimetabolite
+32592,pemetrexed,chemo_backbone,antimetabolite
+26717,etoposide,chemo_backbone,topoisomerase II
+20112,topotecan,chemo_backbone,topoisomerase I
+2680,irinotecan,chemo_backbone,topoisomerase I
+2551,vinorelbine,chemo_backbone,vinca alkaloid
+4337,filgrastim,supportive_care,G-CSF
+4338,pegfilgrastim,supportive_care,G-CSF
+4339,ondansetron,supportive_care,antiemetic
+4340,dexamethasone,supportive_care,corticosteroid
+,placebo,placebo,
+,saline,placebo,

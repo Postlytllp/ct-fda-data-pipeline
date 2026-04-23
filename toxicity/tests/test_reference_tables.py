@@ -28,3 +28,16 @@ def test_committed_monoethnic_file_exists_and_is_parseable():
     assert df["homogeneity_score"].between(0, 1).all()
     assert df["country_iso3"].str.match(r"^[A-Z]{3}$").all()
     assert df["country_iso3"].is_unique
+
+def test_drug_class_lookup_has_required_columns_and_entries():
+    df = pd.read_csv(config.DRUG_CLASS_CSV)
+    required = {"rxcui", "generic_name", "drug_class", "biomarker_note"}
+    assert required.issubset(df.columns)
+    # at least one of each spec-mandated class present
+    classes = set(df.drug_class)
+    for c in ("targeted_oncology", "immunotherapy", "chemo_backbone",
+              "antiangiogenic", "supportive_care", "placebo"):
+        assert c in classes, f"missing class: {c}"
+    # known drug-class mapping smoke-check
+    assert df.loc[df.generic_name == "pembrolizumab", "drug_class"].iloc[0] == "immunotherapy"
+    assert df.loc[df.generic_name == "osimertinib", "drug_class"].iloc[0] == "targeted_oncology"
