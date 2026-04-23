@@ -35,7 +35,7 @@ import os, sys, subprocess
 IN_COLAB = "google.colab" in sys.modules
 REPO_URL = "https://github.com/Postlytllp/ct-fda-data-pipeline.git"
 REPO_DIR = "/content/ct-fda-data-pipeline" if IN_COLAB else os.getcwd()
-TOX_DIR = f"{REPO_DIR}/data_pipeline/toxicity"
+TOX_DIR = f"{REPO_DIR}/toxicity"
 if IN_COLAB and not os.path.exists(REPO_DIR):
     subprocess.run(["git", "clone", REPO_URL, REPO_DIR], check=True)  # git clone
     subprocess.run(["pip", "install", "-q",
