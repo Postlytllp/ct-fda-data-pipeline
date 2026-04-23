@@ -18,7 +18,7 @@ def test_ae_arm_summary_computes_totals_and_rates():
     assert r.distinct_serious_terms == 2
     assert r.distinct_other_terms == 1
     assert round(r.serious_ae_rate, 2) == 0.03
-    assert round(r.any_ae_rate, 2) == 0.10
+    assert round(r.ae_events_per_participant, 2) == 0.10
 
 def test_ae_long_drops_rows_without_resolved_arm():
     ae_raw = pd.DataFrame([

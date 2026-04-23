@@ -8,7 +8,7 @@ def build_ae_arm_summary(ae_raw: pd.DataFrame) -> pd.DataFrame:
         return pd.DataFrame(columns=[
             "nct_id", "arm_label", "total_serious_affected", "total_other_affected",
             "total_at_risk", "distinct_serious_terms", "distinct_other_terms",
-            "serious_ae_rate", "any_ae_rate",
+            "serious_ae_rate", "ae_events_per_participant",
         ])
     df = ae_raw.copy()
     df["affected_count"] = pd.to_numeric(df["affected_count"], errors="coerce").fillna(0)
@@ -32,7 +32,7 @@ def build_ae_arm_summary(ae_raw: pd.DataFrame) -> pd.DataFrame:
     out["serious_ae_rate"] = out.apply(
         lambda r: (r["total_serious_affected"] / r["total_at_risk"])
                   if r["total_at_risk"] else 0.0, axis=1)
-    out["any_ae_rate"] = out.apply(
+    out["ae_events_per_participant"] = out.apply(
         lambda r: ((r["total_serious_affected"] + r["total_other_affected"]) / r["total_at_risk"])
                   if r["total_at_risk"] else 0.0, axis=1)
     return out

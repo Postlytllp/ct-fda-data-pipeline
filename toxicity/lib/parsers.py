@@ -76,7 +76,7 @@ def parse_arms(studies: List[Dict[str, Any]]) -> pd.DataFrame:
             raw = g.get("label")
             rows.append({
                 "nct_id": nct,
-                "arm_label": normalize_arm_label(raw) or raw,
+                "arm_label": raw,
                 "raw_arm_label": raw,
                 "arm_type": g.get("type"),
                 "arm_description": g.get("description"),
@@ -118,7 +118,7 @@ def parse_arm_interventions(studies: List[Dict[str, Any]],
         interventions = _safe_list(ai.get("interventions"))
         iv_index: Dict[str, Dict] = {iv.get("name"): iv for iv in interventions if iv.get("name")}
         for g in _safe_list(ai.get("armGroups")):
-            arm_label = normalize_arm_label(g.get("label")) or g.get("label")
+            arm_label = g.get("label")
             for iv_name in _safe_list(g.get("interventionNames")):
                 iv = iv_index.get(iv_name, {})
                 rxcui = alias_map.get(str(iv_name).lower())

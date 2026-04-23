@@ -80,3 +80,9 @@ def test_end_to_end_produces_nonempty_frames_and_runsummary(tmp_path):
     # cohort may be empty for this fixture (diverse-country trials) — that's OK,
     # but the view builder must at least run without error:
     assert hasattr(cohort, "columns")
+
+    # PK uniqueness: arm_label must uniquely identify an arm within an NCT
+    dupes = arms.groupby(["nct_id", "arm_label"]).size()
+    assert (dupes == 1).all(), (
+        f"arm_label PK collision in arms_df: {dupes[dupes > 1].to_dict()}"
+    )
