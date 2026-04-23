@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+.env
+*.log
+
+# Large reference data / dumps (not tracked)
+data/
+harmonization/*.json
+harmonization/*.RRF
+harmonization/*.txt
+harmonization/*.csv
+harmonization/label_pdf/
+
+# Toxicity pipeline caches / outputs
+toxicity/data/raw/
+toxicity/data/llm_cache/
+toxicity/data/outputs/
