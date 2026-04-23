@@ -1,0 +1,7 @@
+data/raw/
+data/llm_cache/
+data/outputs/
+!data/reference/
+__pycache__/
+.pytest_cache/
+.ipynb_checkpoints/
