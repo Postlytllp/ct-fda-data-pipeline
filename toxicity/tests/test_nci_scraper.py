@@ -46,3 +46,25 @@ def test_parse_nci_drug_page_with_no_subtype_returns_union():
     combined = {d["name"].lower() for d in nsclc_only} | {d["name"].lower() for d in sclc_only}
     # union equals all (ignoring possible duplicates across sections)
     assert combined.issubset(all_names)
+
+
+def test_no_bracket_junk_from_enhertu_split_anchor():
+    html = (FIXTURES / "nci_nsclc.html").read_text(encoding="utf-8")
+    drugs = parse_nci_drug_page(html)
+    names = {d["name"] for d in drugs}
+    # The split-anchor markup must not leak malformed entries
+    assert not any(n.strip().endswith("(") for n in names)
+    assert not any(n.strip().startswith(")") for n in names)
+    assert "enhertu (" not in names
+
+
+def test_combination_entries_split_into_components():
+    html = (FIXTURES / "nci_nsclc.html").read_text(encoding="utf-8")
+    drugs = parse_nci_drug_page(html, subtype="NSCLC")
+    names = {d["name"] for d in drugs}
+    # Components from drug-combinations section should appear as standalone entries
+    assert "carboplatin" in names
+    assert "cisplatin" in names
+    assert "gemcitabine" in names
+    # And the combo string itself must NOT appear as a single generic
+    assert not any("-" in n and any(chem in n for chem in ("carboplatin", "cisplatin", "gemcitabine")) for n in names)
