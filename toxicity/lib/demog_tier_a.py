@@ -23,9 +23,12 @@ _COUNTRY_TITLES = ("Country of Enrollment", "Region of Enrollment", "Country")
 
 
 def _tier_a_for_group(sub: pd.DataFrame) -> dict | None:
-    total = sub["value"].sum()
+    numeric_values = pd.to_numeric(sub["value"], errors="coerce")
+    total = numeric_values.sum()
     if total <= 0:
         return None
+    sub = sub.copy()
+    sub["value"] = numeric_values
     max_row = sub.loc[sub["value"].idxmax()]
     pct = max_row["value"] / total
     if pct >= DIVERSITY_THRESHOLD:
@@ -66,7 +69,8 @@ def tier_a1_per_arm(baseline_df: pd.DataFrame) -> pd.DataFrame:
 
 def tier_a1_trial_level(baseline_df: pd.DataFrame) -> pd.DataFrame:
     out_rows = []
-    race_rows = baseline_df[baseline_df["measure_title"].isin(_RACE_TITLES)]
+    race_rows = baseline_df[baseline_df["measure_title"].isin(_RACE_TITLES)].copy()
+    race_rows["value"] = pd.to_numeric(race_rows["value"], errors="coerce")
     for nct, sub in race_rows.groupby("nct_id"):
         pooled = sub.groupby("category", as_index=False)["value"].sum()
         pooled["nct_id"] = nct
@@ -94,6 +98,8 @@ def tier_a2_country(baseline_df: pd.DataFrame, monoethnic_df: pd.DataFrame) -> p
         str(r["country_name"]).lower(): r for _, r in monoethnic_df.iterrows()
     }
     for (nct, gid), sub in country_rows.groupby(["nct_id", "group_id"], dropna=False):
+        sub = sub.copy()
+        sub["value"] = pd.to_numeric(sub["value"], errors="coerce")
         total = sub["value"].sum()
         if total <= 0:
             continue
