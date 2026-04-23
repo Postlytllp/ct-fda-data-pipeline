@@ -1,0 +1,8 @@
+country_iso3,country_name,dominant_ancestry,homogeneity_score,continent,region,in_diverse_exclusion_list
+JPN,Japan,East Asian (Japanese),0.98,Asia,East Asia,false
+CHN,China,East Asian (Han),0.91,Asia,East Asia,false
+USA,United States,Mixed,0.58,Americas,North America,true
+GBR,United Kingdom,Mixed,0.81,Europe,Western Europe,true
+KOR,South Korea,East Asian (Korean),0.96,Asia,East Asia,false
+IND,India,South Asian,0.72,Asia,South Asia,false
+POL,Poland,European (Polish),0.97,Europe,Eastern Europe,false

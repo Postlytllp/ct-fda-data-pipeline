@@ -6,7 +6,7 @@ __pycache__/
 *.log
 
 # Large reference data / dumps (not tracked)
-data/
+/data/
 harmonization/*.json
 harmonization/*.RRF
 harmonization/*.txt
@@ -17,3 +17,4 @@ harmonization/label_pdf/
 toxicity/data/raw/
 toxicity/data/llm_cache/
 toxicity/data/outputs/
+!toxicity/data/reference/

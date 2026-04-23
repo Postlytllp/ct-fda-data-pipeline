@@ -1,0 +1,40 @@
+country_iso3,country_name,dominant_ancestry,homogeneity_score,continent,region,in_diverse_exclusion_list
+JPN,Japan,East Asian (Japanese),0.98,Asia,East Asia,false
+KOR,South Korea,East Asian (Korean),0.96,Asia,East Asia,false
+CHN,China,East Asian (Han),0.91,Asia,East Asia,false
+TWN,Taiwan,East Asian (Han),0.95,Asia,East Asia,false
+VNM,Vietnam,Southeast Asian (Kinh),0.85,Asia,Southeast Asia,false
+THA,Thailand,Southeast Asian (Thai),0.97,Asia,Southeast Asia,false
+MNG,Mongolia,East Asian (Mongol),0.95,Asia,East Asia,false
+IND,India,South Asian,0.72,Asia,South Asia,false
+BGD,Bangladesh,South Asian (Bengali),0.98,Asia,South Asia,false
+PAK,Pakistan,South Asian,0.75,Asia,South Asia,false
+IRN,Iran,Middle Eastern (Persian),0.61,Asia,Middle East,true
+SAU,Saudi Arabia,Middle Eastern (Arab),0.90,Asia,Middle East,false
+TUR,Turkey,Middle Eastern (Turkic),0.75,Asia,Middle East,false
+ISR,Israel,Mixed (Jewish majority),0.74,Asia,Middle East,true
+EGY,Egypt,North African (Arab),0.99,Africa,North Africa,false
+NGA,Nigeria,Sub-Saharan African,0.30,Africa,West Africa,true
+ETH,Ethiopia,East African,0.35,Africa,East Africa,true
+ZAF,South Africa,Mixed,0.55,Africa,Southern Africa,true
+POL,Poland,European (Polish),0.97,Europe,Eastern Europe,false
+DEU,Germany,European (German),0.81,Europe,Western Europe,true
+FRA,France,European (French),0.78,Europe,Western Europe,true
+ITA,Italy,European (Italian),0.92,Europe,Southern Europe,false
+ESP,Spain,European (Spanish),0.85,Europe,Southern Europe,false
+NLD,Netherlands,European (Dutch),0.80,Europe,Western Europe,true
+SWE,Sweden,European (Nordic),0.83,Europe,Northern Europe,false
+FIN,Finland,European (Finnish),0.93,Europe,Northern Europe,false
+HUN,Hungary,European (Hungarian),0.85,Europe,Eastern Europe,false
+CZE,Czech Republic,European (Czech),0.90,Europe,Eastern Europe,false
+RUS,Russia,European (Russian),0.78,Europe,Eastern Europe,true
+USA,United States,Mixed,0.58,Americas,North America,true
+CAN,Canada,Mixed,0.68,Americas,North America,true
+MEX,Mexico,Latin American (Mestizo),0.62,Americas,Central America,true
+BRA,Brazil,Mixed,0.48,Americas,South America,true
+ARG,Argentina,European-descent Latin American,0.85,Americas,South America,false
+CHL,Chile,Latin American (Mestizo),0.72,Americas,South America,false
+AUS,Australia,Mixed,0.70,Oceania,Oceania,true
+NZL,New Zealand,Mixed,0.71,Oceania,Oceania,true
+GBR,United Kingdom,Mixed,0.81,Europe,Western Europe,true
+IRL,Ireland,European (Irish),0.92,Europe,Western Europe,false
