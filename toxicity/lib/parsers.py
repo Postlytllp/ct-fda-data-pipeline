@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any, Dict, List, Optional
 import pandas as pd
+from tqdm.auto import tqdm
 
 from lib.arm_resolver import normalize_arm_label
 
@@ -24,7 +25,7 @@ def _safe_list(x) -> List:
 
 def parse_trials(studies: List[Dict[str, Any]]) -> pd.DataFrame:
     rows = []
-    for s in studies:
+    for s in tqdm(studies, desc="trials", leave=False):
         ps = s.get("protocolSection", {})
         ident = ps.get("identificationModule", {})
         status = ps.get("statusModule", {})
@@ -67,7 +68,7 @@ def parse_trials(studies: List[Dict[str, Any]]) -> pd.DataFrame:
 
 def parse_arms(studies: List[Dict[str, Any]]) -> pd.DataFrame:
     rows = []
-    for s in studies:
+    for s in tqdm(studies, desc="arms", leave=False):
         ps = s.get("protocolSection", {})
         ident = ps.get("identificationModule", {})
         nct = ident.get("nctId")
@@ -111,7 +112,7 @@ def parse_arm_interventions(studies: List[Dict[str, Any]],
         for _, r in drug_class_df.iterrows() if pd.notna(r.get("rxcui"))
     }
     rows = []
-    for s in studies:
+    for s in tqdm(studies, desc="interventions", leave=False):
         ps = s.get("protocolSection", {})
         nct = _get(("identificationModule", "nctId"), ps)
         ai = ps.get("armsInterventionsModule", {}) or {}

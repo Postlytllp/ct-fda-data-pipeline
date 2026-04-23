@@ -173,8 +173,9 @@ arms_df = annotate_regimen_on_arms(arms_df, ai_df)
 
 # Resolve arm labels across modules
 import pandas as pd
+from tqdm.auto import tqdm
 match_rows = []
-for nct, arm_sub in arms_df.groupby("nct_id"):
+for nct, arm_sub in tqdm(arms_df.groupby("nct_id"), desc="arm-resolve", leave=False):
     ae_titles = ae_df.loc[ae_df.nct_id == nct, "arm_label"].dropna().unique().tolist()
     resolutions = resolve_arm_labels(arm_sub["arm_label"].tolist(), ae_titles)
     for arm_label, info in resolutions.items():

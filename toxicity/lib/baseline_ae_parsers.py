@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any, Dict, List
 import pandas as pd
+from tqdm.auto import tqdm
 
 from lib.arm_resolver import normalize_arm_label, resolve_arm_labels
 
@@ -13,7 +14,7 @@ def _safe_list(x) -> List:
 
 def parse_baseline_raw(studies: List[Dict[str, Any]]) -> pd.DataFrame:
     rows = []
-    for s in studies:
+    for s in tqdm(studies, desc="baseline", leave=False):
         nct = s.get("protocolSection", {}).get("identificationModule", {}).get("nctId")
         rs = s.get("resultsSection", {}) or {}
         bc = rs.get("baselineCharacteristicsModule", {}) or {}
@@ -39,7 +40,7 @@ def parse_baseline_raw(studies: List[Dict[str, Any]]) -> pd.DataFrame:
 
 def parse_ae_raw(studies: List[Dict[str, Any]]) -> pd.DataFrame:
     rows = []
-    for s in studies:
+    for s in tqdm(studies, desc="ae", leave=False):
         nct = s.get("protocolSection", {}).get("identificationModule", {}).get("nctId")
         rs = s.get("resultsSection", {}) or {}
         ae = rs.get("adverseEventsModule", {}) or {}
@@ -70,17 +71,26 @@ def parse_ae_raw(studies: List[Dict[str, Any]]) -> pd.DataFrame:
 
 
 def annotate_regimen_on_arms(arms_df: pd.DataFrame, ai_df: pd.DataFrame) -> pd.DataFrame:
-    """Given arms + arm_interventions, add regimen_key and regimen_display columns.
+    """Add regimen_key and regimen_display columns to arms_df.
 
     regimen_key: sorted pipe-joined RxCUIs (or unknown:<raw_name> for unharmonized).
     regimen_display: sorted pipe-joined generic names (or raw name for unharmonized).
     """
     out = arms_df.copy()
+    if ai_df.empty:
+        out["regimen_key"] = None
+        out["regimen_display"] = None
+        return out
+
+    # Pre-group ai_df once; constant-time lookup per arm.
+    grouped = {k: sub for k, sub in ai_df.groupby(["nct_id", "arm_label"], sort=False)}
+
     keys = []
     displays = []
-    for _, row in out.iterrows():
-        sel = ai_df[(ai_df.nct_id == row["nct_id"]) & (ai_df.arm_label == row["arm_label"])]
-        if sel.empty:
+    rows_iter = tqdm(out.iterrows(), total=len(out), desc="regimen", leave=False)
+    for _, row in rows_iter:
+        sel = grouped.get((row["nct_id"], row["arm_label"]))
+        if sel is None or sel.empty:
             keys.append(None)
             displays.append(None)
             continue
