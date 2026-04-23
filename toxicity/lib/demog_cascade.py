@@ -2,6 +2,7 @@
 from __future__ import annotations
 from typing import Callable, List, Optional
 import pandas as pd
+from tqdm.auto import tqdm
 
 from lib.demog_tier_a import tier_a1_per_arm, tier_a1_trial_level, tier_a2_country
 from lib.demog_tier_b import tier_b1_text_regex, needs_b2_llm
@@ -58,7 +59,9 @@ def run_cascade(trials: List[dict], baseline_df: pd.DataFrame,
             results.append(row)
 
     # B -> C -> D cascade for trials with no Tier A data
-    for trial in trials:
+    cascade_iter = tqdm(trials, desc="cascade B→D", leave=False,
+                        total=len(trials))
+    for trial in cascade_iter:
         if trial["nct_id"] in a_by_nct:
             continue
         # B1

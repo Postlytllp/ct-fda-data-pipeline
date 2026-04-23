@@ -45,11 +45,13 @@ class LLMCache:
 
 B2_SYSTEM_PROMPT = (
     "You extract population restrictions from clinical trial eligibility criteria.\n"
-    "Return strict JSON: {has_population_restriction: bool, population: str|null, "
-    "is_inclusion_criterion: bool, evidence_span: str, reasoning: str}.\n"
-    "Only set has_population_restriction=true when the criterion is a hard "
-    "inclusion filter on ethnicity, nationality, or ancestry. Biomarker or "
-    "disease-stage filters do not count."
+    "Return EXACTLY ONE JSON object on a single line with NO other text before or "
+    "after. The object has these keys: has_population_restriction (bool), population "
+    "(str|null), is_inclusion_criterion (bool), evidence_span (str, max 120 chars), "
+    "reasoning (str, max 80 chars).\n"
+    "Set has_population_restriction=true only when the criterion is a hard inclusion "
+    "filter on ethnicity, nationality, or ancestry. Biomarker or disease-stage "
+    "filters do NOT count. Output nothing but the JSON."
 )
 
 

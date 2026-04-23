@@ -210,11 +210,23 @@ if LLM_ENABLED:
         if not os.path.exists(GEMMA_MODEL_PATH):
             print("Model not found at", GEMMA_MODEL_PATH, "- skipping LLM backend")
         else:
-            gemma = Llama(model_path=GEMMA_MODEL_PATH, n_gpu_layers=-1, n_ctx=4096)
+            gemma = Llama(
+                model_path=GEMMA_MODEL_PATH,
+                n_gpu_layers=-1,
+                n_ctx=4096,
+                verbose=False,  # silence per-call llama_perf_context_print spam
+            )
             from lib.llm_client import PopulationHit, B2_SYSTEM_PROMPT
             def llm_callable(text: str) -> PopulationHit:
-                prompt = f"{B2_SYSTEM_PROMPT}\\n\\nCRITERIA:\\n{text}\\n\\nJSON:"
-                resp = gemma(prompt, max_tokens=300, stop=["\\n\\n"], temperature=0.0)
+                prompt = f"{B2_SYSTEM_PROMPT}\\n\\nCRITERIA:\\n{text}\\n\\nJSON output (one line):\\n"
+                # Tighter stop set: model must emit one JSON object and stop.
+                # "}" alone stops generation when the JSON closes, preventing 300-token ceiling hits.
+                resp = gemma(
+                    prompt,
+                    max_tokens=200,
+                    stop=["\\n\\n", "```", "</s>", "<end_of_turn>"],
+                    temperature=0.0,
+                )
                 raw = resp["choices"][0]["text"].strip()
                 try:
                     data = json.loads(raw)
