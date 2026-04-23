@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from bs4 import BeautifulSoup
 
@@ -15,6 +15,21 @@ _SECTION_IDS = frozenset(
         "drugs-approved-for-small-cell-lung-cancer",
     }
 )
+
+# Mapping from subtype name to the aria-labelledby IDs that belong to it.
+_SUBTYPE_SECTION_IDS: Dict[str, frozenset] = {
+    "NSCLC": frozenset(
+        {
+            "drugs-approved-for-non-small-cell-lung-cancer",
+            "drug-combinations-used-to-treat-non-small-cell-lung-cancer",
+        }
+    ),
+    "SCLC": frozenset(
+        {
+            "drugs-approved-for-small-cell-lung-cancer",
+        }
+    ),
+}
 
 # Trailing salt / dosage-form words to strip from generic names.
 _SALT_RE = re.compile(
@@ -45,7 +60,9 @@ def _strip_salts(name: str) -> str:
     return name
 
 
-def parse_nci_drug_page(html: str) -> List[Dict[str, str]]:
+def parse_nci_drug_page(
+    html: str, subtype: Optional[str] = None
+) -> List[Dict[str, str]]:
     """Parse an NCI 'Drugs Approved for ...' page into drug entries.
 
     Each entry: {"name": str, "kind": "generic" | "brand"}.
@@ -56,12 +73,25 @@ def parse_nci_drug_page(html: str) -> List[Dict[str, str]]:
     Entries with the pattern ``Brand (Generic)`` produce a brand entry for
     the trade name and a generic entry for the INN (salt suffixes stripped).
     Plain entries (no parenthetical brand prefix) are treated as generics.
+
+    Args:
+        html: Raw HTML of the NCI lung cancer drug page.
+        subtype: If "NSCLC", return only drugs from the NSCLC section(s).
+                 If "SCLC", return only drugs from the SCLC section(s).
+                 If None (default), return all drugs from both sections.
     """
+    if subtype is not None and subtype not in _SUBTYPE_SECTION_IDS:
+        raise ValueError(
+            f"subtype must be 'NSCLC', 'SCLC', or None; got {subtype!r}"
+        )
+
+    active_ids = _SUBTYPE_SECTION_IDS[subtype] if subtype else _SECTION_IDS
+
     soup = BeautifulSoup(html, "lxml")
     entries: List[Dict[str, str]] = []
     seen: set = set()
 
-    for section_id in _SECTION_IDS:
+    for section_id in active_ids:
         h2 = soup.find("h2", id=section_id)
         if h2 is None:
             continue
