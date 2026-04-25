@@ -7,6 +7,10 @@ from lib.config import DIVERSITY_THRESHOLD
 
 def add_has_any_ae_flag(arms_df: pd.DataFrame, ae_summary_df: pd.DataFrame) -> pd.DataFrame:
     lhs = arms_df.copy()
+    # Idempotent: drop a pre-existing has_any_ae so re-running this in a
+    # notebook kernel doesn't trigger merge-suffix collisions.
+    if "has_any_ae" in lhs.columns:
+        lhs = lhs.drop(columns=["has_any_ae"])
     if ae_summary_df.empty:
         lhs["has_any_ae"] = False
         return lhs
@@ -51,6 +55,10 @@ def add_passes_diversity_flag(demog_df: pd.DataFrame) -> pd.DataFrame:
 def add_has_lung_cancer_drug_match_flag(arms_df: pd.DataFrame,
                                        ai_df: pd.DataFrame) -> pd.DataFrame:
     out = arms_df.copy()
+    # Idempotent: drop a pre-existing flag so re-running this on the same
+    # arms_df in a notebook kernel doesn't produce _x/_y merge suffixes.
+    if "has_lung_cancer_drug_match" in out.columns:
+        out = out.drop(columns=["has_lung_cancer_drug_match"])
     if ai_df.empty or "is_primary_oncology" not in ai_df.columns:
         out["has_lung_cancer_drug_match"] = False
         return out
