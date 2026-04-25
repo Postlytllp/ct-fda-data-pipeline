@@ -50,8 +50,15 @@ def add_passes_diversity_flag(demog_df: pd.DataFrame) -> pd.DataFrame:
 
 def add_has_lung_cancer_drug_match_flag(arms_df: pd.DataFrame,
                                        ai_df: pd.DataFrame) -> pd.DataFrame:
+    out = arms_df.copy()
+    if ai_df.empty or "is_primary_oncology" not in ai_df.columns:
+        out["has_lung_cancer_drug_match"] = False
+        return out
+    # Rename on the DataFrame after reset_index so the column always lands,
+    # regardless of pandas' Series-name behavior on empty groupby results.
     agg = (ai_df.groupby(["nct_id", "arm_label"])["is_primary_oncology"]
-              .any().rename("has_lung_cancer_drug_match").reset_index())
-    out = arms_df.merge(agg, on=["nct_id", "arm_label"], how="left")
+              .any().reset_index()
+              .rename(columns={"is_primary_oncology": "has_lung_cancer_drug_match"}))
+    out = out.merge(agg, on=["nct_id", "arm_label"], how="left")
     out["has_lung_cancer_drug_match"] = out["has_lung_cancer_drug_match"].fillna(False)
     return out
