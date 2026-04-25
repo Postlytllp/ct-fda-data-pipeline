@@ -68,5 +68,7 @@ def add_has_lung_cancer_drug_match_flag(arms_df: pd.DataFrame,
               .any().reset_index()
               .rename(columns={"is_primary_oncology": "has_lung_cancer_drug_match"}))
     out = out.merge(agg, on=["nct_id", "arm_label"], how="left")
-    out["has_lung_cancer_drug_match"] = out["has_lung_cancer_drug_match"].fillna(False)
+    out["has_lung_cancer_drug_match"] = (
+        out["has_lung_cancer_drug_match"].fillna(False).astype(bool)
+    )
     return out
