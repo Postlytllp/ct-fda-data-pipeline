@@ -1,0 +1,567 @@
+# Gold-standard extractions for the 15-sample evaluation set.
+#
+# Each sample contains:
+#   input        — the verbatim outcome text fed to the model
+#   nct          — ClinicalTrials.gov NCT identifier
+#   topic        — the disease-area search term used to pull the sample
+#   trial_context — extra context from CT.gov (condition, intervention,
+#                   eligibility) that informs the gold standard but is NOT
+#                   given to the model at inference time
+#   endpoints    — the 11-field extraction we expect, applying the canonical
+#                   training-time rules (named scoring instruments → ec, etc.)
+#   rationale    — notes on judgment calls (especially measurement_type)
+#   sources      — URLs consulted to resolve ambiguity
+#
+# Schema reference (from the training-time system prompt):
+#   measurement_method = physical technique / tool to collect data
+#                        (CT scan, MRI, ECG, blood test, etc.)
+#                        NOT scoring systems / questionnaires.
+#   evaluation_criteria = scoring system / guideline / rule that DEFINES
+#                        the endpoint (RECIST v1.1, NYHA class, named
+#                        questionnaires like SLEDAI/DAS28/CPAQ, etc.)
+#   measurement_type    ∈ {continuous, binary, time-to-event, ordinal}
+#   metric_type         ∈ examples: mean, median, proportion, hazard ratio,
+#                                   change from baseline, count, score
+#   unit                = explicit unit when stated or unambiguously
+#                         standard (e.g., ORR → %, VO2 max → mL/kg/min)
+#   population          = explicit population/subgroup when named
+#   is_composite + components = composite-of-events endpoint structure
+
+samples:
+
+  # ============================================================
+  - idx: 1
+    nct: NCT07280741
+    topic: rheumatoid
+    input: |
+      Disease safety (flare) - Systemic Lupus Erythematosus. Systemic Lupus Erythematosus (SLE):
+      An increase of more than three points in the Systemic Lupus Erythematosus Disease Activity
+      Index 2000 (SLEDAI-2K). Score: 0 - No activity; 1 - 4 mild activity; > 6 high activity
+      [Time Frame: Day 1 (baseline) through day 42 and six weeks after the second dose D84.]
+    trial_context:
+      condition: Autoimmune Rheumatic Diseases
+      intervention: Recombinant Zoster Vaccine (RZV)
+      population: Adults ≥18 with autoimmune rheumatic diseases (RA, SLE, etc.) on
+        immunomodulatory monotherapy
+    endpoints:
+      - endpoint_name_standardized: "SLE Disease Flare"
+        measurement_of: "systemic lupus erythematosus disease activity flare"
+        measurement_type: "binary"
+        metric_type: "proportion"
+        timeframe: "Day 1 (baseline) through day 42 and six weeks after the second dose D84"
+        measurement_method: null
+        evaluation_criteria: "SLEDAI-2K (Systemic Lupus Erythematosus Disease Activity Index 2000), increase of >3 points"
+        unit: null
+        population: null
+        is_composite: false
+        components: []
+    rationale: >
+      The endpoint as written is OPERATIONALLY a binary "flare yes/no" event,
+      defined by a threshold change (>3 points) in the SLEDAI-2K score. The
+      SLEDAI-2K itself is a continuous additive index 0–105 (a sum of 24
+      weighted clinical descriptors), but the OUTCOME being measured here is
+      the binary flare event derived from it — hence measurement_type=binary
+      and metric_type=proportion. The threshold rule is captured inside
+      evaluation_criteria along with the named instrument. measurement_method
+      is null because no physical assay (blood test, imaging, etc.) is the
+      data source — SLEDAI-2K is a clinical scoring instrument.
+    sources:
+      - https://www.mdcalc.com/calc/10099/systemic-lupus-erythematosus-disease-activity-index-2000-sledai-2k
+      - https://pubmed.ncbi.nlm.nih.gov/11838846/
+      - https://www.frontiersin.org/journals/lupus/articles/10.3389/flupu.2024.1442013/full
+
+  # ============================================================
+  - idx: 2
+    nct: NCT04116060
+    topic: cardiovascular
+    input: |
+      Change in oral microbiome. Change in oral microbiome after dietary nitrate ingestion
+      [Time Frame: 4 Weeks]
+    trial_context:
+      condition: Erectile Dysfunction
+      intervention: Dietary Nitrate vs Control
+      population: Patients with erectile dysfunction (IIEF5 8-21), PDE-5 responders, aged 30-80
+    endpoints:
+      - endpoint_name_standardized: "Change in Oral Microbiome"
+        measurement_of: "oral microbiome composition"
+        measurement_type: "continuous"
+        metric_type: "change from baseline"
+        timeframe: "4 Weeks"
+        measurement_method: null
+        evaluation_criteria: null
+        unit: null
+        population: null
+        is_composite: false
+        components: []
+    rationale: >
+      The trial doesn't specify the assay (typically 16S rRNA sequencing, but
+      not in source text), so measurement_method is null per the prompt's
+      "do not hallucinate" rule. Microbiome composition metrics (alpha/beta
+      diversity, taxon abundance) are continuous. unit is null because no
+      single unit applies to a multi-dimensional composition outcome.
+
+  # ============================================================
+  - idx: 3
+    nct: NCT00444483
+    topic: diabetes
+    input: |
+      A secondary objective of the study was the comparison of QoL- subscale in patients already
+      on insulin therapy with those newly on insulin therapy.
+    trial_context:
+      condition: Type 2 Diabetes Mellitus, Insulin Therapy, QoL
+      intervention: Structured diabetes teaching and treatment program
+      population: Insulin-treated elderly type-2 diabetes patients (>54 years, hyperglycemia)
+    endpoints:
+      - endpoint_name_standardized: "Quality of Life Subscale"
+        measurement_of: "health-related quality of life"
+        measurement_type: "continuous"
+        metric_type: "mean"
+        timeframe: null
+        measurement_method: null
+        evaluation_criteria: null
+        unit: null
+        population: "patients already on insulin therapy"
+        is_composite: false
+        components: []
+    rationale: >
+      The text doesn't name the specific QoL instrument (could be SF-36,
+      DQOL, ADDQoL — none are named), so evaluation_criteria is null. The
+      analysis compares two subgroups; "patients already on insulin therapy"
+      is the explicit population subset for this endpoint, so we populate
+      the population field. metric_type=mean since this is a between-group
+      comparison of QoL subscale scores. timeframe is null — not in source.
+
+  # ============================================================
+  - idx: 4
+    nct: NCT05914870
+    topic: hypertension
+    input: |
+      Changes in Body Fat Percentage from baseline at week 12. Body Fat Percentage will be assessed
+      by bioimpedance with the DSM-BIA Multifrequency Segmental Body Composition Analyser InBody 770.
+      [Time Frame: Two times. Baseline and 12 weeks later]
+    trial_context:
+      condition: Hypertension
+      intervention: Multi-component training vs Continuous Cardiovascular Training
+      population: Adults aged 40-65 with controlled high BP, sedentary
+    endpoints:
+      - endpoint_name_standardized: "Change in Body Fat Percentage"
+        measurement_of: "body fat percentage"
+        measurement_type: "continuous"
+        metric_type: "change from baseline"
+        timeframe: "Baseline and 12 weeks"
+        measurement_method: "bioimpedance (DSM-BIA InBody 770 analyzer)"
+        evaluation_criteria: null
+        unit: "%"
+        population: null
+        is_composite: false
+        components: []
+    rationale: >
+      Bioimpedance is a real physical measurement technique → measurement_method.
+      Body fat percentage canonically uses %, and the source explicitly states
+      this is a percentage. No scoring system or guideline applies →
+      evaluation_criteria=null.
+
+  # ============================================================
+  - idx: 5
+    nct: NCT04131166
+    topic: obesity
+    input: |
+      Leg adipose tissue volumes. Thigh and calf adipose tissue volumes will be assessed by
+      magnetic resonance imagining (MRI) [Time Frame: Baseline only (cross-sectional comparison
+      of metabolically healthy lean, metabolically healthy obese and metabolically unhealthy
+      obese subjects).]
+    trial_context:
+      condition: Obesity, Insulin Resistance
+      intervention: Mediterranean / low-carb ketogenic / low-fat diet
+      population: Metabolically healthy lean, MHO, MUO subgroups
+    endpoints:
+      - endpoint_name_standardized: "Leg Adipose Tissue Volume"
+        measurement_of: "thigh and calf adipose tissue volume"
+        measurement_type: "continuous"
+        metric_type: "mean"
+        timeframe: "Baseline only (cross-sectional)"
+        measurement_method: "MRI"
+        evaluation_criteria: null
+        unit: null
+        population: "metabolically healthy lean, metabolically healthy obese, and metabolically unhealthy obese subjects"
+        is_composite: false
+        components: []
+    rationale: >
+      MRI is a physical imaging technique → measurement_method. Cross-sectional
+      comparison of three subgroups → metric_type=mean (between-group mean
+      comparison). Adipose tissue volume could be cm³, mL, or L; not stated
+      in source, so unit=null per "do not infer unit unless obvious". The
+      explicit subgroup definition is the population for this endpoint.
+
+  # ============================================================
+  - idx: 6
+    nct: NCT05432297
+    topic: cancer
+    input: |
+      Subjectively measured physical activity - Saltin-Grimby. Measured with the Saltin-Grimby
+      physical activity level scale and the International Physical Activity Questionnaire.
+      [Time Frame: Up to 12 months]
+    trial_context:
+      condition: Head and Neck Neoplasms (oropharynx/larynx/hypopharynx)
+      intervention: Preventive physical exercise during radiotherapy
+      population: H&N cancer patients receiving curative radiotherapy ± chemotherapy
+    endpoints:
+      - endpoint_name_standardized: "Subjectively Measured Physical Activity Level"
+        measurement_of: "leisure-time physical activity level"
+        measurement_type: "ordinal"
+        metric_type: "score"
+        timeframe: "Up to 12 months"
+        measurement_method: null
+        evaluation_criteria: "Saltin-Grimby Physical Activity Level Scale (SGPALS); International Physical Activity Questionnaire (IPAQ)"
+        unit: null
+        population: null
+        is_composite: false
+        components: []
+    rationale: >
+      Saltin-Grimby is a 4-level ordinal scale (1=inactive, 2=light, 3=regular,
+      4=vigorous regular). IPAQ output can be expressed as continuous
+      MET-min/week or as ordinal categories (low/moderate/high) — most
+      commonly the categorical form when paired with SGPALS. So the
+      combined endpoint is best treated as ordinal. Both instruments are
+      named scoring tools → evaluation_criteria. measurement_method is null
+      because both are self-/subject-reported questionnaires (no physical
+      assay or device).
+    sources:
+      - https://pmc.ncbi.nlm.nih.gov/articles/PMC9436064/
+      - https://onlinelibrary.wiley.com/doi/full/10.1111/sms.12611
+
+  # ============================================================
+  - idx: 7
+    nct: NCT06145360
+    topic: obesity
+    input: |
+      systolic blood pressure and diastolic blood pressure. systolic blood pressure and diastolic
+      blood pressure measure in mmHg during the therapy [Time Frame: 12 weeks]
+    trial_context:
+      condition: Type 2 Diabetes Mellitus, Glucose Metabolism Disorders
+      intervention: Empagliflozin 10 mg added to insulin+metformin+DPP4i
+      population: Adults ≥35 with type 2 diabetes, documented HbA1c
+    endpoints:
+      - endpoint_name_standardized: "Systolic Blood Pressure"
+        measurement_of: "systolic blood pressure"
+        measurement_type: "continuous"
+        metric_type: "mean"
+        timeframe: "12 weeks"
+        measurement_method: null
+        evaluation_criteria: null
+        unit: "mmHg"
+        population: null
+        is_composite: false
+        components: []
+      - endpoint_name_standardized: "Diastolic Blood Pressure"
+        measurement_of: "diastolic blood pressure"
+        measurement_type: "continuous"
+        metric_type: "mean"
+        timeframe: "12 weeks"
+        measurement_method: null
+        evaluation_criteria: null
+        unit: "mmHg"
+        population: null
+        is_composite: false
+        components: []
+    rationale: >
+      The text explicitly mentions both systolic AND diastolic — these are
+      two distinct endpoints (per the prompt's "MULTIPLE ENDPOINT DETECTION"
+      rule). measurement_method is null because the source doesn't say HOW
+      it's measured (cuff, oscillometric, ambulatory, etc.) — "during the
+      therapy" describes timing, not method. Conservatively null per the
+      "don't hallucinate" rule.
+
+  # ============================================================
+  - idx: 8
+    nct: NCT05254223
+    topic: rheumatoid
+    input: |
+      Changes in disease activity. Disease activity is determined by DAS28 score_ erythrocyte
+      sedimentation rate (DAS28-ESR) [Time Frame: Day 0, month 4, month 8 and month12.]
+    trial_context:
+      condition: Rheumatoid Arthritis
+      intervention: Anti-inflammatory diet vs control diet
+      population: RA patients
+    endpoints:
+      - endpoint_name_standardized: "Change in DAS28-ESR"
+        measurement_of: "rheumatoid arthritis disease activity"
+        measurement_type: "continuous"
+        metric_type: "change from baseline"
+        timeframe: "Day 0, month 4, month 8, and month 12"
+        measurement_method: "blood test"
+        evaluation_criteria: "DAS28-ESR (Disease Activity Score in 28 joints with erythrocyte sedimentation rate)"
+        unit: null
+        population: null
+        is_composite: false
+        components: []
+    rationale: >
+      DAS28-ESR is a continuous score (0–9.4 typical range) computed from
+      tender joint count, swollen joint count, ESR (a blood test), and
+      patient global assessment. Although clinical thresholds (≤3.2 low,
+      >5.1 high disease activity) make ordinal categorization possible,
+      the underlying score is continuous and the outcome here is "change",
+      so measurement_type=continuous and metric_type=change from baseline.
+      ESR requires a blood draw → measurement_method="blood test" (the
+      unique laboratory component). The named instrument goes in
+      evaluation_criteria. unit=null because DAS28 is unitless.
+    sources:
+      - https://en.wikipedia.org/wiki/DAS28
+
+  # ============================================================
+  - idx: 9
+    nct: NCT01910727
+    topic: diabetes
+    input: |
+      Increased numbers of family members involved in diabetes support care between baseline
+      and 12 months follow-up [Time Frame: 12 months follow-up]
+    trial_context:
+      condition: Diabetes
+      intervention: 'Together on Diabetes-Hopkins (community-based pilot)'
+      population: American Indian youth aged 10-19
+    endpoints:
+      - endpoint_name_standardized: "Number of Family Members Involved in Diabetes Support Care"
+        measurement_of: "family involvement in diabetes support care"
+        measurement_type: "continuous"
+        metric_type: "change from baseline"
+        timeframe: "12 months follow-up"
+        measurement_method: null
+        evaluation_criteria: null
+        unit: "number"
+        population: null
+        is_composite: false
+        components: []
+    rationale: >
+      "Number of family members" is a count; counts are typically modeled
+      as continuous (Poisson-style) for change-from-baseline analyses.
+      unit="number" is the canonical unit for counts. No physical
+      measurement method or named scoring instrument applies.
+
+  # ============================================================
+  - idx: 10
+    nct: NCT03212391
+    topic: hypertension
+    input: |
+      VO2 max. maximal oxygen consumption [Time Frame: 12 months]
+    trial_context:
+      condition: Abdominal Obesity, Metabolic Syndrome, Hypertension
+      intervention: Diet ± Walking / Nordic Walking
+      population: Adults 60-90, BMI >27, living in Verona Italy
+    endpoints:
+      - endpoint_name_standardized: "VO2 max"
+        measurement_of: "maximal oxygen consumption (aerobic capacity)"
+        measurement_type: "continuous"
+        metric_type: "mean"
+        timeframe: "12 months"
+        measurement_method: "cardiopulmonary exercise test"
+        evaluation_criteria: null
+        unit: "mL/kg/min"
+        population: null
+        is_composite: false
+        components: []
+    rationale: >
+      VO2 max is by definition measured during a graded cardiopulmonary
+      exercise test (CPET) with gas exchange analysis. The trial doesn't
+      explicitly say "CPET" but the only way to measure VO2 max IS CPET,
+      so the inferred measurement_method is appropriate (analogous to ORR
+      → % being inferable). unit="mL/kg/min" is the universally standard
+      VO2 max unit and is unambiguously inferable.
+
+  # ============================================================
+  - idx: 11
+    nct: NCT06855589
+    topic: cancer
+    input: |
+      disease-specific survival. compare death rates due to prostate cancer between patients
+      that received 6 months of hormone therapy versus those that received 12 months of hormone
+      therapy. [Time Frame: 5 years]
+    trial_context:
+      condition: Prostate Cancer (Adenocarcinoma) — unfavorable intermediate-risk
+      intervention: 6 vs 12 months of Eligard (leuprolide) + radiation therapy
+      population: Adenocarcinoma of prostate, unfavorable intermediate-risk
+    endpoints:
+      - endpoint_name_standardized: "Disease-Specific Survival"
+        measurement_of: "death due to prostate cancer (prostate cancer-specific mortality)"
+        measurement_type: "time-to-event"
+        metric_type: "hazard ratio"
+        timeframe: "5 years"
+        measurement_method: null
+        evaluation_criteria: null
+        unit: null
+        population: null
+        is_composite: false
+        components: []
+    rationale: >
+      Disease-specific survival is the canonical time-to-event outcome.
+      Comparing two arms with a survival outcome → hazard ratio is the
+      standard metric (per the training prompt's PFS example). No
+      physical measurement_method or scoring system applies — the event
+      is death attribution, ascertained from clinical/registry follow-up.
+
+  # ============================================================
+  - idx: 12
+    nct: NCT03219697
+    topic: depression
+    input: |
+      Physical Activity, Sedentary Time, Sleep Duration. Parent reported measures of physical
+      activity, sedentary time, and sleep duration (based on the Canadian Community Health Survey),
+      [Time Frame: at 6 months and 12 months post-randomization]
+    trial_context:
+      condition: Child Obesity (PARENT Trial)
+      intervention: Parents Together parenting education program
+      population: Children at risk for childhood obesity (high birth weight, weight gain, etc.)
+    endpoints:
+      - endpoint_name_standardized: "Physical Activity"
+        measurement_of: "physical activity"
+        measurement_type: "continuous"
+        metric_type: "mean"
+        timeframe: "6 months and 12 months post-randomization"
+        measurement_method: null
+        evaluation_criteria: "parent-reported measures based on the Canadian Community Health Survey"
+        unit: null
+        population: null
+        is_composite: false
+        components: []
+      - endpoint_name_standardized: "Sedentary Time"
+        measurement_of: "sedentary time"
+        measurement_type: "continuous"
+        metric_type: "mean"
+        timeframe: "6 months and 12 months post-randomization"
+        measurement_method: null
+        evaluation_criteria: "parent-reported measures based on the Canadian Community Health Survey"
+        unit: null
+        population: null
+        is_composite: false
+        components: []
+      - endpoint_name_standardized: "Sleep Duration"
+        measurement_of: "sleep duration"
+        measurement_type: "continuous"
+        metric_type: "mean"
+        timeframe: "6 months and 12 months post-randomization"
+        measurement_method: null
+        evaluation_criteria: "parent-reported measures based on the Canadian Community Health Survey"
+        unit: null
+        population: null
+        is_composite: false
+        components: []
+    rationale: >
+      Three distinct constructs explicitly listed → three endpoints (per
+      "MULTIPLE ENDPOINT DETECTION"). Each is a continuous measure of
+      time spent in a state. The CCHS (Canadian Community Health Survey)
+      provides the survey instrument items used for parent-reported
+      values; that's a defined evaluation framework → evaluation_criteria.
+      unit could be "minutes/day" or "hours/day" but is not explicitly
+      stated → null per "do not hallucinate".
+
+  # ============================================================
+  - idx: 13
+    nct: NCT04440020
+    topic: alzheimer
+    input: |
+      Electroencephalography recording. Changes in Electroencephalography (EEG), resting state.
+      The device records brain signals through 57 electrodes, 2 reference electrodes attached to
+      the earlobes, and a ground electrode placed at a left anterior position
+      [Time Frame: baseline,24 months]
+    trial_context:
+      condition: Mild Dementia (prevention with olive oil leaves)
+      intervention: Beverage of Olive Oil Leaves + Mediterranean Diet
+      population: Subjects with memory complaints and abnormal Logical Memory II
+    endpoints:
+      - endpoint_name_standardized: "Change in Resting-State EEG"
+        measurement_of: "resting-state brain electrical activity"
+        measurement_type: "continuous"
+        metric_type: "change from baseline"
+        timeframe: "baseline, 24 months"
+        measurement_method: "Electroencephalography (EEG)"
+        evaluation_criteria: null
+        unit: null
+        population: null
+        is_composite: false
+        components: []
+    rationale: >
+      EEG is a physical recording technique → measurement_method. Resting
+      state is a paradigm/condition for the recording, not a separate
+      endpoint or evaluation criterion (it's part of the protocol). EEG
+      output is continuous (signal amplitudes over time, frequency-band
+      powers), and "Changes in EEG" implies change from baseline. No
+      explicit unit (would depend on metric: µV² for power, Hz for
+      frequency, etc.) → null.
+
+  # ============================================================
+  - idx: 14
+    nct: NCT05003362
+    topic: depression
+    input: |
+      Change in pain acceptance and pain expectancy.. Pain acceptance assessed through the
+      Chronic Pain Acceptance Questionnaire and pain expectancy during the migraine attacks
+      assessed using the allodynia questionnaire. [Time Frame: one year]
+    trial_context:
+      condition: Migraine
+      intervention: ACT (Acceptance and Commitment Therapy) — virtual mindfulness
+      population: Women aged 18-65 with episodic migraine
+    endpoints:
+      - endpoint_name_standardized: "Change in Pain Acceptance"
+        measurement_of: "acceptance of chronic pain"
+        measurement_type: "continuous"
+        metric_type: "change from baseline"
+        timeframe: "one year"
+        measurement_method: null
+        evaluation_criteria: "Chronic Pain Acceptance Questionnaire (CPAQ)"
+        unit: null
+        population: null
+        is_composite: false
+        components: []
+      - endpoint_name_standardized: "Change in Pain Expectancy"
+        measurement_of: "cutaneous allodynia / pain expectancy during migraine attacks"
+        measurement_type: "continuous"
+        metric_type: "change from baseline"
+        timeframe: "one year"
+        measurement_method: null
+        evaluation_criteria: "Allodynia Symptom Checklist (ASC-12) — referred to as 'allodynia questionnaire'"
+        unit: null
+        population: null
+        is_composite: false
+        components: []
+    rationale: >
+      Two distinct constructs → two endpoints. CPAQ-20 has a continuous
+      total score 0–120 (sum of two subscales); ASC-12 has a continuous
+      total score 0–24 (sum of 12 items, 0–2 each). Both are
+      self-report questionnaires → evaluation_criteria, with
+      measurement_method=null. Unit could be "points"/"score" but is
+      not stated in the source — null is the safe choice.
+    sources:
+      - https://resref.com/chronic-pain-acceptance-questionnaire-20-cpaq-20-a-full-guide/
+      - https://pubmed.ncbi.nlm.nih.gov/31637701/
+
+  # ============================================================
+  - idx: 15
+    nct: NCT04440020
+    topic: alzheimer
+    input: |
+      Letter & Category Fluency Test- Measurement to Assess Verbal Fluency and Learning. Changes
+      in the Letter & Category Fluency Test [Time Frame: baseline,24 months]
+    trial_context:
+      condition: Mild Dementia (prevention with olive oil leaves)
+      intervention: Beverage of Olive Oil Leaves + Mediterranean Diet
+      population: Subjects with memory complaints and abnormal Logical Memory II
+    endpoints:
+      - endpoint_name_standardized: "Change in Letter & Category Fluency Test Score"
+        measurement_of: "verbal fluency and learning"
+        measurement_type: "continuous"
+        metric_type: "change from baseline"
+        timeframe: "baseline, 24 months"
+        measurement_method: null
+        evaluation_criteria: "Letter & Category Fluency Test (Verbal Fluency Test)"
+        unit: "number"
+        population: null
+        is_composite: false
+        components: []
+    rationale: >
+      Verbal fluency tests are scored as the count of correct words
+      generated in a fixed time (typically 60 seconds per letter or
+      category). Counts are continuous; unit="number" / "count" is
+      canonical. The named test is the scoring instrument →
+      evaluation_criteria. measurement_method=null because the test
+      itself IS the measurement (no separate physical assay).
+    sources:
+      - https://en.wikipedia.org/wiki/Verbal_fluency_test
